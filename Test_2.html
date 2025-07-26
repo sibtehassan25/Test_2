@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Professional MDCAT Online Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      background-color: #f7f9fc;
+      color: #333;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #0056b3;
+    }
+    #timer {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #d9534f;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .question-container {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+    .options label {
+      display: block;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    button {
+      background-color: #0056b3;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      margin: 10px 5px 0 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    #result-container {
+      background: #e9f0ff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    .wrong-answer {
+      color: #d9534f;
+      font-weight: bold;
+    }
+    .correct-answer {
+      color: #5cb85c;
+    }
+    .summary {
+      font-size: 1.1em;
+      margin-bottom: 15px;
+    }
+    .remarks {
+      background-color: #dfeffc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      button {
+        width: 100%;
+        margin: 8px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MDCAT Online Test</h1>
+  <div id="timer">Time Left: 03:00:00</div>
+  
+  <div class="question-container" id="question-container">
+    <!-- Question and answers will go here -->
+  </div>
+
+  <div style="text-align:center;">
+    <button id="prevBtn" disabled>Previous</button>
+    <button id="nextBtn">Next</button>
+    <button id="submitBtn">Submit</button>
+  </div>
+
+  <div id="result-container" style="display:none;">
+    <h2>Test Result</h2>
+    <div class="summary" id="summary"></div>
+    <div class="remarks" id="remarks"></div>
+    <button id="retakeBtn">Retake Test</button>
+  </div>
+
+<script>
+  // Test Data Array with questions, options and correct answer key
+  // Format: {question:'', options: ['A...', 'B...', 'C...', 'D...'], answer: 'B'}
+  const questions = [
+    {question: "1. Which part of the brain controls breathing and heartbeat?", options: ["A. Cerebrum","B. Medulla oblongata","C. Hypothalamus","D. Cerebellum"], answer: "B"},
+    {question: "2. The functional unit of the kidney is:", options: ["A. Neuron","B. Nephron","C. Glomerulus","D. Loop of Henle"], answer: "B"},
+    {question: "3. Which of the following is NOT a part of the small intestine?", options: ["A. Duodenum","B. Jejunum","C. Ileum","D. Cecum"], answer: "D"},
+    {question: "4. In which phase of mitosis do chromatids separate?", options: ["A. Prophase","B. Metaphase","C. Anaphase","D. Telophase"], answer: "C"},
+    {question: "5. Asexual reproduction occurs in:", options: ["A. Hydra","B. Dog","C. Human","D. Parrot"], answer: "A"},
+    {question: "6. Haemophilia is a:", options: ["A. Bacterial disease","B. Sex-linked disease","C. Viral infection","D. Dominant disorder"], answer: "B"},
+    {question: "7. Which enzyme digests proteins in the stomach?", options: ["A. Amylase","B. Pepsin","C. Lipase","D. Maltase"], answer: "B"},
+    {question: "8. Which part of the plant is responsible for photosynthesis?", options: ["A. Xylem","B. Phloem","C. Chloroplast","D. Mitochondria"], answer: "C"},
+    {question: "9. Meiosis results in:", options: ["A. 2 diploid cells","B. 4 haploid cells","C. 4 diploid cells","D. 2 haploid cells"], answer: "B"},
+    {question: "10. Which vitamin is produced in the human skin?", options: ["A. Vitamin A","B. Vitamin B","C. Vitamin C","D. Vitamin D"], answer: "D"},
+    {question: "11. Function of platelets is to:", options: ["A. Carry oxygen","B. Fight infection","C. Clot blood","D. Produce insulin"], answer: "C"},
+    {question: "12. Insulin is secreted by:", options: ["A. Alpha cells","B. Beta cells","C. Delta cells","D. Gamma cells"], answer: "B"},
+    {question: "13. The longest part of the alimentary canal is:", options: ["A. Esophagus","B. Large intestine","C. Small intestine","D. Stomach"], answer: "C"},
+    {question: "14. Exchange of gases in lungs occurs in:", options: ["A. Bronchi","B. Trachea","C. Alveoli","D. Bronchioles"], answer: "C"},
+    {question: "15. Which hormone regulates metabolism?", options: ["A. Insulin","B. Glucagon","C. Thyroxine","D. Estrogen"], answer: "C"},
+    {question: "16. Which organ has both endocrine and exocrine function?", options: ["A. Liver","B. Pancreas","C. Kidney","D. Thyroid"], answer: "B"},
+    {question: "17. Which disease is caused by the deficiency of insulin?", options: ["A. Goiter","B. Diabetes","C. Asthma","D. Cancer"], answer: "B"},
+    {question: "18. The contraction of heart is controlled by:", options: ["A. SA node","B. AV node","C. Purkinje fibers","D. Bundle of His"], answer: "A"},
+    {question: "19. Which gas is released during photosynthesis?", options: ["A. CO2","B. O2","C. N2","D. H2"], answer: "B"},
+    {question: "20. Which tissue conducts water in plants?", options: ["A. Phloem","B. Xylem","C. Cambium","D. Cortex"], answer: "B"},
+    {question: "21. Which protein helps in oxygen transport?", options: ["A. Insulin","B. Hemoglobin","C. Myosin","D. Keratin"], answer: "B"},
+    {question: "22. Mitochondria are called:", options: ["A. Protein factory","B. Powerhouse of the cell","C. Control center","D. Waste disposal unit"], answer: "B"},
+    {question: "23. A reflex action involves:", options: ["A. Brain","B. Heart","C. Spinal cord","D. Lungs"], answer: "C"},
+    {question: "24. Which of the following is a polysaccharide?", options: ["A. Glucose","B. Maltose","C. Cellulose","D. Fructose"], answer: "C"},
+    {question: "25. Which blood group is a universal donor?", options: ["A. A","B. B","C. AB","D. O"], answer: "D"},
+    {question: "26. Which of the following is NOT a type of connective tissue?", options: ["A. Blood","B. Bone","C. Cartilage","D. Epidermis"], answer: "D"},
+    {question: "27. Which type of immunity is provided by vaccines?", options: ["A. Natural active","B. Artificial active","C. Natural passive","D. Artificial passive"], answer: "B"},
+    {question: "28. The site of fertilization in female is:", options: ["A. Uterus","B. Ovary","C. Fallopian tube","D. Vagina"], answer: "C"},
+    {question: "29. The organelle responsible for protein synthesis is:", options: ["A. Nucleus","B. Ribosome","C. Golgi apparatus","D. Lysosome"], answer: "B"},
+    {question: "30. DNA is located in:", options: ["A. Cytoplasm","B. Mitochondria","C. Nucleus","D. Ribosomes"], answer: "C"},
+    {question: "31. Which part of the brain maintains balance and posture?", options: ["A. Cerebrum","B. Medulla","C. Cerebellum","D. Thalamus"], answer: "C"},
+    {question: "32. Hemoglobin contains:", options: ["A. Zinc","B. Calcium","C. Iron","D. Copper"], answer: "C"},
+    {question: "33. Which one is a sexually transmitted disease?", options: ["A. Cholera","B. AIDS","C. Malaria","D. Influenza"], answer: "B"},
+    {question: "34. Stomata help in:", options: ["A. Absorption","B. Photosynthesis","C. Transpiration","D. Respiration"], answer: "C"},
+    {question: "35. Which hormone is responsible for ovulation?", options: ["A. LH","B. FSH","C. Estrogen","D. Progesterone"], answer: "A"},
+    {question: "36. Which vitamin helps in blood clotting?", options: ["A. Vitamin A","B. Vitamin B","C. Vitamin K","D. Vitamin D"], answer: "C"},
+    {question: "37. Kidney filters blood through:", options: ["A. Loop of Henle","B. Nephron","C. Ureter","D. Urethra"], answer: "B"},
+    {question: "38. Lungs are covered by:", options: ["A. Pleura","B. Pericardium","C. Peritoneum","D. Diaphragm"], answer: "A"},
+    {question: "39. Which of these is a living part of xylem?", options: ["A. Tracheids","B. Vessels","C. Parenchyma","D. Fibers"], answer: "C"},
+    {question: "40. Plants exhibit phototropism due to:", options: ["A. Gibberellins","B. Cytokinins","C. Auxins","D. Ethylene"], answer: "C"},
+    {question: "41. The site of glycolysis is:", options: ["A. Mitochondria","B. Cytoplasm","C. Nucleus","D. Ribosome"], answer: "B"},
+    {question: "42. Which enzyme converts starch to maltose?", options: ["A. Amylase","B. Pepsin","C. Lipase","D. Lactase"], answer: "A"},
+    {question: "43. Which blood vessels carry blood to the heart?", options: ["A. Arteries","B. Veins","C. Capillaries","D. Arterioles"], answer: "B"},
+    {question: "44. Deficiency of iodine causes:", options: ["A. Diabetes","B. Goiter","C. Kwashiorkor","D. Rickets"], answer: "B"},
+    {question: "45. Which process increases genetic variation?", options: ["A. Mitosis","B. Mutation","C. Cloning","D. Binary fission"], answer: "B"},
+    {question: "46. Which part of the nephron is responsible for filtration?", options: ["A. Loop of Henle","B. Bowman's capsule","C. Collecting duct","D. Ureter"], answer: "B"},
+    {question: "47. Which protein is found in hair and nails?", options: ["A. Hemoglobin","B. Keratin","C. Collagen","D. Actin"], answer: "B"},
+    {question: "48. Which component of blood fights infection?", options: ["A. RBCs","B. WBCs","C. Platelets","D. Plasma"], answer: "B"},
+    {question: "49. The function of ligaments is to connect:", options: ["A. Muscle to muscle","B. Muscle to bone","C. Bone to bone","D. Bone to skin"], answer: "C"},
+    {question: "50. What type of fertilization occurs in humans?", options: ["A. External","B. Internal","C. Asexual","D. Vegetative"], answer: "B"},
+    {question: "51. Which type of respiration produces more energy?", options: ["A. Anaerobic","B. Aerobic","C. Fermentation","D. Alcoholic"], answer: "B"},
+    {question: "52. The largest part of the brain is:", options: ["A. Cerebellum","B. Cerebrum","C. Medulla","D. Hypothalamus"], answer: "B"},
+    {question: "53. The blood vessel that brings blood to glomerulus is:", options: ["A. Efferent arteriole","B. Renal vein","C. Afferent arteriole","D. Renal artery"], answer: "C"},
+    {question: "54. Which hormone increases blood glucose levels?", options: ["A. Insulin","B. Glucagon","C. Estrogen","D. Thyroxine"], answer: "B"},
+    {question: "55. The outermost layer of skin is:", options: ["A. Dermis","B. Epidermis","C. Hypodermis","D. Mesoderm"], answer: "B"},
+    {question: "56. Which blood group is universal recipient?", options: ["A. A","B. B","C. AB","D. O"], answer: "C"},
+    {question: "57. Which part of the eye regulates light entering?", options: ["A. Retina","B. Lens","C. Iris","D. Cornea"], answer: "C"},
+    {question: "58. Which part of the brain regulates temperature and hunger?", options: ["A. Cerebrum","B. Cerebellum","C. Hypothalamus","D. Thalamus"], answer: "C"},
+    {question: "59. DNA is composed of:", options: ["A. Proteins","B. Amino acids","C. Nucleotides","D. Fatty acids"], answer: "C"},
+    {question: "60. Red bone marrow produces:", options: ["A. RBCs","B. WBCs","C. Platelets","D. All of these"], answer: "D"},
+    {question: "61. Antidiuretic hormone (ADH) affects:", options: ["A. Liver","B. Heart","C. Kidneys","D. Pancreas"], answer: "C"},
+    {question: "62. Asexual reproduction by spores is seen in:", options: ["A. Hydra","B. Amoeba","C. Bread mold","D. Planaria"], answer: "C"},
+    {question: "63. Which organ stores bile?", options: ["A. Liver","B. Pancreas","C. Gallbladder","D. Stomach"], answer: "C"},
+    {question: "64. Systole refers to:", options: ["A. Heart relaxation","B. Ventricular contraction","C. Atrial filling","D. Lung expansion"], answer: "B"},
+    {question: "65. Which part of the flower becomes fruit?", options: ["A. Petal","B. Ovary","C. Ovule","D. Stigma"], answer: "B"},
+    {question: "66. Which of the following has both autotrophic and heterotrophic nutrition?", options: ["A. Fungi","B. Algae","C. Euglena","D. Amoeba"], answer: "C"},
+    {question: "67. Which of these increases surface area for absorption?", options: ["A. Villi","B. Alveoli","C. Nephrons","D. Rugae"], answer: "A"},
+    {question: "68. The pulmonary vein carries:", options: ["A. Oxygenated blood","B. Deoxygenated blood","C. Both types","D. No blood"], answer: "A"},
+    {question: "69. Which one is a genetic disease?", options: ["A. Heart failure","B. Liver cirrhosis","C. Kidney failure","D. Lung disease"], answer: "D"},
+    {question: "70. Which hormone controls plant growth toward light?", options: ["A. Cytokinin","B. Auxin","C. Gibberellin","D. Ethylene"], answer: "B"},
+    {question: "71. Hemodialysis is used in:", options: ["A. Cancer","B. AIDS","C. Hemophilia","D. Flu"], answer: "C"},
+    {question: "72. DNA replication takes place during:", options: ["A. Prophase","B. Interphase","C. Metaphase","D. Telophase"], answer: "B"},
+    {question: "73. In flowering plants, double fertilization produces:", options: ["A. Zygote","B. Endosperm","C. Both A and B","D. None"], answer: "C"},
+    {question: "74. Lymph is a:", options: ["A. Tissue","B. Fluid","C. Organ","D. Cell"], answer: "B"},
+    {question: "75. Which of these prevents water loss in plants?", options: ["A. Xylem","B. Phloem","C. Cuticle","D. Stomata"], answer: "C"},
+    {question: "76. Muscle fatigue is due to accumulation of:", options: ["A. Uric acid","B. Oxygen","C. Lactic acid","D. CO2"], answer: "C"},
+    {question: "77. The brain is protected by:", options: ["A. Skull","B. Rib cage","C. Pelvis","D. Spine"], answer: "A"},
+    {question: "78. Which is the basic unit of heredity?", options: ["A. Chromosome","B. Gene","C. DNA","D. Allele"], answer: "B"},
+    {question: "79. Which process forms gametes?", options: ["A. Mitosis","B. Meiosis","C. Fertilization","D. Cloning"], answer: "B"},
+    {question: "80. What is the function of stomata?", options: ["A. Transport","B. Respiration","C. Photosynthesis","D. Gas exchange"], answer: "D"},
+    {question: "81. Which enzyme breaks down fats?", options: ["A. Amylase","B. Lipase","C. Pepsin","D. Trypsin"], answer: "B"},
+    {question: "82. Atomic number is equal to:", options: ["A. Number of neutrons","B. Number of electrons","C. Sum of protons and neutrons","D. Atomic mass"], answer: "B"},
+    {question: "83. Which of the following is a noble gas?", options: ["A. Nitrogen","B. Oxygen","C. Neon","D. Hydrogen"], answer: "C"},
+    {question: "84. Avogadro's number is:", options: ["A. 6.022 × 10²²","B. 6.022 × 10²³","C. 6.022 × 10²⁴","D. 3.0 x 10²³"], answer: "B"},
+    {question: "85. Which bond is the strongest?", options: ["A. Covalent","B. Ionic","C. Hydrogen","D. Metallic"], answer: "A"},
+    {question: "86. Which of the following is a base?", options: ["A. NaOH","B. HCl","C. CH3COOH","D. CO2"], answer: "A"},
+    {question: "87. Which of these is not a chemical change?", options: ["A. Rusting","B. Boiling water","C. Burning","D. Digestion"], answer: "B"},
+    {question: "88. In the periodic table, elements are arranged in order of:", options: ["A. Mass number","B. Atomic number","C. Valency","D. Chemical properties"], answer: "B"},
+    {question: "89. Which of these is a saturated hydrocarbon?", options: ["A. Ethene","B. Ethyne","C. Methane","D. Benzene"], answer: "C"},
+    {question: "90. An electrolyte conducts electricity when:", options: ["A. Solid","B. Dry","C. Molten or in solution","D. In vacuum"], answer: "C"},
+    {question: "91. A catalyst increases the rate of reaction by:", options: ["A. Increasing temperature","B. Lowering activation energy","C. Consuming reactants","D. Changing products"], answer: "B"},
+    {question: "92. Which of the following contains ionic bonds?", options: ["A. H2O","B. NH3","C. NaCl","D. CH4"], answer: "C"},
+    {question: "93. The pH of a neutral solution is:", options: ["A. 1","B. 5","C. 7","D. 14"], answer: "C"},
+    {question: "94. The chemical formula of quicklime is:", options: ["A. CaCO3","B. CaO","C. Ca(OH)2","D. CaCl2"], answer: "B"},
+    {question: "95. Isotopes differ in:", options: ["A. Number of protons","B. Atomic number","C. Number of neutrons","D. Chemical properties"], answer: "C"},
+    {question: "96. What is the valency of nitrogen in NH3?", options: ["A. 1","B. 2","C. 3","D. 5"], answer: "C"},
+    {question: "97. All organic compounds contain:", options: ["A. Hydrogen","B. Oxygen","C. Carbon","D. Nitrogen"], answer: "C"},
+    {question: "98. The number of atoms in 1 mole of oxygen gas is:", options: ["A. 6.022 × 10²³","B. 2 x 6.022 × 10²³","C. 12.044 × 10²³","D. 3.011 × 10²³"], answer: "B"},
+    {question: "99. Water is a:", options: ["A. Non-polar molecule","B. Polar molecule","C. Metallic compound","D. None"], answer: "B"},
+    {question: "100. Electrolysis of water gives:", options: ["A. H2 only","B. O2 only","C. H2 and O2","D. OH- only"], answer: "C"},
+    {question: "101. Which of these is amphoteric?", options: ["A. NaOH","B. HCl","C. Al(OH)3","D. Ca(OH)2"], answer: "C"},
+    {question: "102. Periodic trends are most related to:", options: ["A. Atomic mass","B. Atomic number","C. Density","D. Molar volume"], answer: "B"},
+    {question: "103. Which gas is evolved when HCl reacts with Zn?", options: ["A. Oxygen","B. Nitrogen","C. Hydrogen","D. Chlorine"], answer: "C"},
+    {question: "104. Which of these is a reducing agent?", options: ["A. O2","B. Cl2","C. H2","D. CO2"], answer: "C"},
+    {question: "105. Which of the following is a covalent compound?", options: ["A. NaCl","B. H2O","C. KBr","D. CaO"], answer: "B"},
+    {question: "106. The shape of methane molecule is:", options: ["A. Linear","B. Bent","C. Tetrahedral","D. Trigonal planar"], answer: "C"},
+    {question: "107. Which of the following is a non-metal?", options: ["A. Mg","B. Cu","C. N","D. Fe"], answer: "C"},
+    {question: "108. The formula for sulfuric acid is:", options: ["A. HNO3","B. H2SO4","C. HCl","D. H2CO3"], answer: "B"},
+    {question: "109. The molar mass of H2O is:", options: ["A. 10 g/mol","B. 18 g/mol","C. 16 g/mol","D. 20 g/mol"], answer: "B"},
+    {question: "110. Oxidation is:", options: ["A. Loss of oxygen","B. Gain of hydrogen","C. Loss of electrons","D. Gain of electrons"], answer: "C"},
+    {question: "111. Which process is exothermic?", options: ["A. Melting","B. Boiling","C. Freezing","D. Evaporation"], answer: "C"},
+    {question: "112. Acid rain is caused by:", options: ["A. CO2","B. SO2","C. H2","D. O3"], answer: "B"},
+    {question: "113. The rate of a chemical reaction depends on:", options: ["A. Temperature","B. Surface area","C. Concentration","D. All of these"], answer: "D"},
+    {question: "114. Which has the highest electronegativity?", options: ["A. Na","B. Cl","C. O","D. F"], answer: "D"},
+    {question: "115. Which compound is used in baking soda?", options: ["A. Na2CO3","B. NaHCO3","C. NaOH","D. NaCl"], answer: "B"},
+    {question: "116. Noble gases are:", options: ["A. Reactive","B. Radioactive","C. Inert","D. Explosive"], answer: "C"},
+    {question: "117. The alkali metals belong to group:", options: ["A. 1","B. 2","C. 3","D. 7"], answer: "A"},
+    {question: "118. The color of phenolphthalein in base is:", options: ["A. Colorless","B. Pink","C. Red","D. Yellow"], answer: "B"},
+    {question: "119. pH less than 7 indicates:", options: ["A. Base","B. Acid","C. Neutral","D. Salt"], answer: "B"},
+    {question: "120. Which compound contains only carbon and hydrogen?", options: ["A. Alcohol","B. Hydrocarbon","C. Aldehyde","D. Ester"], answer: "B"},
+    {question: "121. The process used to separate crude oil is:", options: ["A. Chromatography","B. Distillation","C. Sublimation","D. Filtration"], answer: "B"},
+    {question: "122. One mole of Na contains:", options: ["A. 23 atoms","B. 6.022 × 10²³ atoms","C. 12 g","D. 11 protons"], answer: "B"},
+    {question: "123. Which of these causes hardness in water?", options: ["A. NaCl","B. Ca²⁺","C. Sugar","D. CO2"], answer: "B"},
+    {question: "124. Which hydrocarbon is unsaturated?", options: ["A. Alkane","B. Alkene","C. Alkyl","D. Cycloalkane"], answer: "B"},
+    {question: "125. The oxidation number of O in H2O is:", options: ["A. +2","B. +1","C. 0","D. -2"], answer: "D"},
+    {question: "126. The process of losing electrons is:", options: ["A. Oxidation","B. Reduction","C. Hydrolysis","D. Electrolysis"], answer: "A"},
+    {question: "127. The SI unit of force is:", options: ["A. Dyne","B. Kilogram","C. Newton","D. Pascal"], answer: "C"},
+    {question: "128. Which of these is a vector quantity?", options: ["A. Speed","B. Mass","C. Displacement","D. Distance"], answer: "C"},
+    {question: "129. The acceleration of free fall is approximately:", options: ["A. 8.9 m/s²","B. 10 m/s²","C. 9.8 m/s²","D. 9.2 m/s²"], answer: "C"},
+    {question: "130. Ohm's Law is:", options: ["A. V = IR","B. V = I/R","C. R = VI","D. I = VR"], answer: "A"},
+    {question: "131. Resistance depends on:", options: ["A. Material","B. Length","C. Area","D. All of these"], answer: "D"},
+    {question: "132. Which device converts electrical energy into mechanical energy?", options: ["A. Generator","B. Motor","C. Transformer","D. Battery"], answer: "B"},
+    {question: "133. The slope of a velocity-time graph gives:", options: ["A. Distance","B. Speed","C. Acceleration","D. Momentum"], answer: "C"},
+    {question: "134. The power of a lens is measured in:", options: ["A. Meter","B. Diopter","C. Watt","D. Tesla"], answer: "B"},
+    {question: "135. The unit of pressure is:", options: ["A. Newton","B. Pascal","C. Joule","D. Watt"], answer: "B"},
+    {question: "136. A body in motion tends to stay in motion due to:", options: ["A. Acceleration","B. Inertia","C. Gravity","D. Friction"], answer: "B"},
+    {question: "137. The energy stored in a stretched spring is:", options: ["A. Kinetic","B. Potential","C. Mechanical","D. Thermal"], answer: "B"},
+    {question: "138. A convex lens is:", options: ["A. Diverging","B. Converging","C. Neutral","D. Concave"], answer: "B"},
+    {question: "139. The formula of momentum is:", options: ["A. mv²","B. ma","C. mv","D. m/v"], answer: "C"},
+    {question: "140. The device used to measure current is:", options: ["A. Voltmeter","B. Ammeter","C. Ohmmeter","D. Galvanometer"], answer: "B"},
+    {question: "141. Which has the highest speed in vacuum?", options: ["A. Sound","B. Light","C. Water waves","D. Electricity"], answer: "B"},
+    {question: "142. When velocity is constant, acceleration is:", options: ["A. Increasing","B. Decreasing","C. Zero","D. Maximum"], answer: "C"},
+    {question: "143. Work done is maximum when angle between force and displacement is:", options: ["A. 0°","B. 90°","C. 180°","D. 45°"], answer: "A"},
+    {question: "144. One kilowatt-hour is equal to:", options: ["A. 100 J","B. 3.6 × 10⁶ J","C. 3600 J","D. 36000 J"], answer: "B"},
+    {question: "145. The resistance of a wire increases with:", options: ["A. Decrease in temperature","B. Increase in length","C. Increase in area","D. Use of silver"], answer: "B"},
+    {question: "146. Which law states action = reaction?", options: ["A. Newton's 1st","B. Newton's 2nd","C. Newton's 3rd","D. Hooke's Law"], answer: "C"},
+    {question: "147. Frequency is measured in:", options: ["A. Newton","B. Joule","C. Hertz","D. Ampere"], answer: "C"},
+    {question: "148. Sound needs a medium to travel. This shows that it is a:", options: ["A. Transverse wave","B. Electromagnetic wave","C. Mechanical wave","D. Stationary wave"], answer: "C"},
+    {question: "149. An object in circular motion constantly changes:", options: ["A. Speed","B. Mass","C. Velocity direction","D. Distance"], answer: "C"},
+    {question: "150. Power is the rate of:", options: ["A. Acceleration","B. Energy transfer","C. Force","D. Pressure"], answer: "B"},
+    {question: "151. Which factor does not affect gravitational force?", options: ["A. Mass","B. Distance","C. Volume","D. None"], answer: "C"},
+    {question: "152. In parallel circuits, voltage:", options: ["A. Remains same","B. Is divided","C. Doubled","D. Zero"], answer: "A"},
+    {question: "153. The unit of energy is:", options: ["A. Watt","B. Newton","C. Joule","D. Hertz"], answer: "C"},
+    {question: "154. Heat transfer by direct contact is:", options: ["A. Radiation","B. Convection","C. Conduction","D. Transmission"], answer: "C"},
+    {question: "155. Centripetal force acts:", options: ["A. Outward","B. Inward","C. Perpendicular","D. Tangential"], answer: "B"},
+    {question: "156. The angle of incidence equals angle of reflection in:", options: ["A. Refraction","B. Diffusion","C. Reflection","D. Interference"], answer: "C"},
+    {question: "157. The magnetic field around a current-carrying wire is:", options: ["A. Linear","B. Circular","C. Random","D. None"], answer: "B"},
+    {question: "158. A transformer works on:", options: ["A. AC","B. DC","C. Both","D. None"], answer: "A"},
+    {question: "159. Which particle has no charge?", options: ["A. Proton","B. Neutron","C. Electron","D. Positron"], answer: "B"},
+    {question: "160. Which of the following obeys inverse square law?", options: ["A. Gravity","B. Electrostatic force","C. Light intensity","D. All of these"], answer: "D"},
+    {question: "161. The unit of capacitance is:", options: ["A. Ampere","B. Farad","C. Coulomb","D. Volt"], answer: "B"},
+    {question: "162. Which quantity is conserved in elastic collisions?", options: ["A. Momentum only","B. Kinetic energy only","C. Both momentum and kinetic energy","D. Energy only"], answer: "C"},
+    {question: "163. Choose the correct synonym for the word \"Obsolete\":", options: ["A. Modern","B. Outdated","C. Advanced","D. Useful"], answer: "B"},
+    {question: "164. Choose the correct antonym for \"Reluctant\":", options: ["A. Willing","B. Lazy","C. Unhappy","D. Hesitant"], answer: "A"},
+    {question: "165. Select the correct word to complete the sentence: He is very good ___ mathematics.", options: ["A. In","B. At","C. On","D. Of"], answer: "B"},
+    {question: "166. Choose the grammatically correct sentence:", options: ["A. He don't like tea.","B. He doesn't likes tea.","C. He doesn't like tea.","D. He do not like tea."], answer: "C"},
+    {question: "167. Identify the part of speech of the underlined word: She quickly finished her homework.", options: ["A. Noun","B. Verb","C. Adjective","D. Adverb"], answer: "D"},
+    {question: "168. Find the correct indirect speech: She said, \"I am reading a book.\"", options: ["A. She said that I am reading a book.","B. She said that she is reading a book.","C. She said that she was reading a book.","D. She said she had been reading a book."], answer: "C"},
+    {question: "169. Choose the correct sentence:", options: ["A. Neither he or I was invited.","B. Neither he nor I was invited.","C. Neither he nor I were invited.","D. Neither he and I was invited."], answer: "B"},
+    {question: "170. The word \"benevolent\" means:", options: ["A. Cruel","B. Kind","C. Greedy","D. Lazy"], answer: "B"},
+    {question: "171. Which sentence is in passive voice?", options: ["A. He is writing a letter.","B. A letter is written by him.","C. He writes a letter.","D. He wrote a letter."], answer: "B"},
+    {question: "172. If ALL DOGS are ANIMALS and SOME ANIMALS are CATS, which conclusion follows?", options: ["A. All dogs are cats","B. Some cats are dogs","C. Some animals are cats","D. All animals are dogs"], answer: "C"},
+    {question: "173. Find the next number in the sequence: 2, 4, 8, 16, ?", options: ["A. 18","B. 24","C. 30","D. 32"], answer: "D"},
+    {question: "174. Which is the odd one out?", options: ["A. Pen","B. Pencil","C. Eraser","D. Book"], answer: "D"},
+    {question: "175. If TABLE is coded as GZYOV, then CHAIR is coded as:", options: ["A. XSZRI","B. XSZIR","C. XSRZI","D. XSRIZ"], answer: "A"},
+    {question: "176. A man walks 5 km north, then 3 km east. How far is he from his starting point?", options: ["A. 5 km","B. 6 km","C. 8 km","D. 10 km"], answer: "B"},
+    {question: "177. Which number does not belong in the series: 3, 5, 7, 12, 13, 17", options: ["A. 5","B. 12","C. 13","D. 17"], answer: "B"},
+    {question: "178. If MONDAY is coded as 123456, how will SUNDAY be coded?", options: ["A. 789456","B. 963456","C. 915346","D. 891456"], answer: "D"},
+    {question: "179. Complete the analogy: Bird: Nest:: Bee: ?", options: ["A. Hive","B. Web","C. Den","D. Coop"], answer: "A"},
+    {question: "180. Which shape is different from others?", options: ["A. Circle","B. Triangle","C. Square","D. Sphere"], answer: "D"},
+  ];
+
+  let currentQuestion = 0;
+  let answers = Array(questions.length).fill(null);
+  const totalTime = 3 * 60 * 60;  // 3 hours in seconds
+  let timeLeft = totalTime;
+  let timer;
+
+  const container = document.getElementById('question-container');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const timerElm = document.getElementById('timer');
+  const resultContainer = document.getElementById('result-container');
+  const summary = document.getElementById('summary');
+  const remarks = document.getElementById('remarks');
+  const retakeBtn = document.getElementById('retakeBtn');
+
+  function renderQuestion(index) {
+    const q = questions[index];
+    container.innerHTML = `<h2>Question ${index + 1} of ${questions.length}</h2>
+      <p><strong>${q.question}</strong></p>
+      <div class="options">${q.options.map((opt,i) => {
+        const letter = opt.charAt(0);
+        const checked = (answers[index] === letter) ? "checked" : "";
+        return `<label><input type="radio" name="answer" value="${letter}" ${checked}> ${opt}</label>`;
+      }).join('')}</div>`;
+
+    // Buttons disabling logic
+    prevBtn.disabled = index === 0;
+    nextBtn.disabled = index === questions.length -1;
+  }
+
+  function updateTimer() {
+    const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+    const m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    timerElm.textContent = `Time Left: ${h}:${m}:${s}`;
+    if(timeLeft <= 0) {
+      clearInterval(timer);
+      alert("Time's up! Your test will be submitted automatically.");
+      submitTest();
+    }
+    timeLeft--;
+  }
+
+  function saveAnswer() {
+    const selected = document.querySelector('input[name="answer"]:checked');
+    if(selected) {
+      answers[currentQuestion] = selected.value;
+    }
+  }
+
+  function submitTest() {
+    saveAnswer();
+    clearInterval(timer);
+    container.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'none';
+    timerElm.style.display = 'none';
+
+    // Calculate results
+    let correct = 0;
+    let wrongQuestions = [];
+    for(let i=0; i < questions.length; i++){
+      if(answers[i] === questions[i].answer){
+        correct++;
+      } else {
+        wrongQuestions.push({
+          num: i+1,
+          question: questions[i].question,
+          yourAnswer: answers[i],
+          correctAnswer: questions[i].answer,
+          options: questions[i].options
+        });
+      }
+    }
+    const percentage = (correct / questions.length * 100).toFixed(2);
+    summary.innerHTML = `
+      <p>Total Questions: <strong>${questions.length}</strong></p>
+      <p>Correct Answers: <strong>${correct}</strong></p>
+      <p>Wrong Answers: <strong>${questions.length - correct}</strong></p>
+      <p>Percentage: <strong>${percentage} %</strong></p>`;
+
+    let remarkText = `<h3>Wrongly Answered Questions</h3>`;
+    if(wrongQuestions.length === 0){
+      remarkText += `<p>All answers are correct. Well done!</p>`;
+    } else {
+      wrongQuestions.forEach(item => {
+        remarkText += `<p><strong>Q${item.num}:</strong> ${item.question}<br>
+          Your answer: <span class="wrong-answer">${item.yourAnswer ? item.options.find(o => o.startsWith(item.yourAnswer)) : 'No answer selected'}</span><br>
+          Correct answer: <span class="correct-answer">${item.options.find(o => o.startsWith(item.correctAnswer))}</span></p><hr>`;
+      });
+    }
+    remarks.innerHTML = remarkText;
+
+    resultContainer.style.display = 'block';
+    window.scrollTo(0,0);
+  }
+
+  function retakeTest() {
+    currentQuestion = 0;
+    answers.fill(null);
+    resultContainer.style.display = 'none';
+    container.style.display = 'block';
+    timerElm.style.display = 'block';
+    prevBtn.style.display = 'inline-block';
+    nextBtn.style.display = 'inline-block';
+    submitBtn.style.display = 'inline-block';
+    renderQuestion(currentQuestion);
+
+    // Reset timer
+    timeLeft = totalTime;
+    clearInterval(timer);
+    timer = setInterval(updateTimer, 1000);
+  }
+
+  // Event Listeners
+  nextBtn.addEventListener('click', () => {
+    saveAnswer();
+    if(currentQuestion < questions.length - 1){
+      currentQuestion++;
+      renderQuestion(currentQuestion);
+    }
+  });
+
+  prevBtn.addEventListener('click', () => {
+    saveAnswer();
+    if(currentQuestion > 0){
+      currentQuestion--;
+      renderQuestion(currentQuestion);
+    }
+  });
+
+  submitBtn.addEventListener('click', () => {
+    const conf = confirm("Are you sure you want to submit the test?");
+    if(conf){
+      submitTest();
+    }
+  });
+
+  retakeBtn.addEventListener('click', retakeTest);
+
+  // Before unload event to submit test if page is closed accidentally
+  window.addEventListener("beforeunload", function (e) {
+    if(resultContainer.style.display === 'none') {
+      submitTest();
+      e.preventDefault();
+      return "";
+    }
+  });
+
+  // Initialize
+  renderQuestion(currentQuestion);
+  timer = setInterval(updateTimer, 1000);
+</script>
+</body>
+</html>
+
